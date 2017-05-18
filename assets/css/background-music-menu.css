@@ -1,0 +1,117 @@
+/*sound*/
+.sound-section {
+  background: transparent;
+}
+.sound-section button,
+.sound-section html input[type="button"],
+.sound-section input[type="reset"],
+.sound-section input[type="submit"] {
+    -webkit-appearance: button;
+    cursor: pointer;
+}
+button#sound-frame {
+    background: transparent;
+}
+.sound-frame-class {
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    min-height: 30px;
+    min-width: 30px;
+    padding: 9px;
+    border: 0;
+    background: none;
+    font-size: 11px;
+    font-style: italic
+}
+.sound-frame-class:focus,
+.sound-frame-class:active {
+    box-shadow: none;
+    background-image: none;
+    outline: none
+}
+.sound-frame-class .icon {
+    width: 12px;
+    height: 12px
+}
+#icon-sound {
+    display: block;
+    float: left;
+    width: 3px;
+    height: 18px;
+    margin-right: 1px;
+    background: #000;
+    -webkit-transform: scale(1, 0.1);
+    transform: scale(1, 0.1);
+    -webkit-transform-origin: bottom;
+    transform-origin: bottom
+}
+.play-sound #icon-sound {
+    -webkit-animation: sound-frame-class 2s infinite;
+    animation: sound-frame-class 2s infinite;
+}
+.play-sound #icon-sound:nth-child(2) {
+    -webkit-animation-delay: 1.2s;
+    animation-delay: 1.2s
+}
+.play-sound #icon-sound:nth-child(3) {
+    -webkit-animation-delay: .3s;
+    animation-delay: .3s
+}
+.play-sound #icon-sound:nth-child(4) {
+    -webkit-animation-delay: 1.7s;
+    animation-delay: 1.7s
+}
+.play-sound #icon-sound:nth-child(5) {
+    -webkit-animation-delay: .4s;
+    animation-delay: .4s
+}
+@-webkit-keyframes sound-frame-class {
+    0% {
+        -webkit-transform: scale(1, 0.1);
+        transform: scale(1, 0.1)
+    }
+    25% {
+        -webkit-transform: scale(1, 1);
+        transform: scale(1, 1)
+    }
+    50% {
+        -webkit-transform: scale(1, 0.3);
+        transform: scale(1, 0.3)
+    }
+    75% {
+        -webkit-transform: scale(1, 0.6);
+        transform: scale(1, 0.6)
+    }
+    100% {
+        -webkit-transform: scale(1, 0.1);
+        transform: scale(1, 0.1)
+    }
+}
+@keyframes sound-frame-class {
+    0% {
+        -webkit-transform: scale(1, 0.1);
+        transform: scale(1, 0.1)
+    }
+    25% {
+        -webkit-transform: scale(1, 1);
+        transform: scale(1, 1)
+    }
+    50% {
+        -webkit-transform: scale(1, 0.3);
+        transform: scale(1, 0.3)
+    }
+    75% {
+        -webkit-transform: scale(1, 0.6);
+        transform: scale(1, 0.6)
+    }
+    100% {
+        -webkit-transform: scale(1, 0.1);
+        transform: scale(1, 0.1)
+    }
+}
