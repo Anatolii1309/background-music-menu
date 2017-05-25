@@ -58,7 +58,11 @@ If you want to still use the file from your server, you can upload it via ftp. A
 
 == Changelog ==
 
-= v1.0.0: Initial release =
+= 1.1.0 =
+* Elimination of vulnerability
+
+= 1.0.0 =
+* Initial release
 
 == Screenshots ==
 
@@ -68,5 +72,8 @@ If you want to still use the file from your server, you can upload it via ftp. A
 
 == Upgrade Notice ==
 
-=1.0=
+= 1.1.0 =
+Function changes. Checking the entered variables
+
+= 1.0.0 =
 Initial release

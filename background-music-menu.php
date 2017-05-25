@@ -30,8 +30,20 @@ if ( !defined( 'ABSPATH' ) )
 if ( !class_exists( 'BackgroundMusicMenu' )  && ! function_exists( 'BackgroundMusicMenu' ) ) {
 
     class BackgroundMusicMenu {
+		public function __construct() {
 
-		public function init() {
+			add_action( 'init', array( $this, 'init' ) );
+
+			add_action( 'init', array( $this, 'start_unit' ) );
+
+			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+
+			add_action( 'admin_init', array( $this, 'admin_unit' ) );
+
+			add_action( 'wp_head', array( $this, 'bmm_add_css' ) );
+		}
+
+		public function init() {	
 
 			// add a meta-box in the menu
 			add_action( 'admin_init', array( $this, 'setting_meta_box' ) );
@@ -49,7 +61,117 @@ if ( !class_exists( 'BackgroundMusicMenu' )  && ! function_exists( 'BackgroundMu
 			add_action( 'wp_ajax_add-menu-item', array( $this, 'ajax_add_menu_item' ), 0 );
 
 			//add files js and css
-			add_action('wp_enqueue_scripts', array($this, 'load_my_scripts'));
+			add_action( 'wp_enqueue_scripts', array( $this, 'load_my_scripts' ) );
+		}
+
+		/*
+		* Plugin Options.
+		*/
+		public function start_unit() {
+
+			$this->options = array_merge( array(
+				'bmm-sound' 		=> '',
+				'bmm-margin-top' 	=> '',
+				'bmm-margin-right' 	=> '',
+				'bmm-margin-botton' => '',
+				'bmm-margin-left' 	=> '',
+			), (array) get_option( 'background-music-menu', array() ) );
+		}
+
+		/*
+		* Plugin page.
+		*/
+		public function admin_unit () {
+
+			register_setting( 	'background-music-menu', 'background-music-menu', array( $this, 'sanitize_options' ) );
+			add_settings_section( 'bmm_general', false, '__return_false', 'background-music-menu' );
+			add_settings_field( 'bmm-sound', __( 'Url sound:', 'background-music-menu' ), array( $this, 'field_code_url' ), 'background-music-menu', 'bmm_general' );
+			add_settings_field( 'add-text-margin', __( 'Fill in these fields if you need to align the icon.', 'background-music-menu' ), '', 'background-music-menu', 'bmm_general' );
+			add_settings_field( 'bmm-margin-top', __( 'Margin top:', 'background-music-menu' ), array( $this, 'field_code_margin_top' ), 'background-music-menu', 'bmm_general' );
+			add_settings_field( 'bmm-margin-right', __( 'Margin right:', 'background-music-menu' ), array( $this, 'field_code_margin_right' ), 'background-music-menu', 'bmm_general' );
+			add_settings_field( 'bmm-margin-botton', __( 'Margin botton:', 'background-music-menu' ), array( $this, 'field_code_margin_botton' ), 'background-music-menu', 'bmm_general' );
+			add_settings_field( 'bmm-margin-left', __( 'Margin left:', 'background-music-menu' ), array( $this, 'field_code_margin_left' ), 'background-music-menu', 'bmm_general' );
+		}
+
+		/*
+		* Field url.
+		*/
+		public function field_code_url() {
+
+			?>
+			<input name="background-music-menu[bmm-sound]" id="bmm-sound" type="text" value="<?php echo esc_url( $this->options['bmm-sound'] ); ?>" style="width: 100%;" required />
+
+			<?php
+		}
+
+		/*
+		* Field margin top.
+		*/
+		public function field_code_margin_top() {
+
+			?>
+				<input type="number" name="background-music-menu[bmm-margin-top]" value="<?php echo absint( $this->options['bmm-margin-top'] ); ?>" /> px
+			<?php
+		}
+
+		/*
+		* Field margin right.
+		*/
+		public function field_code_margin_right() {
+
+			?>
+				<input type="number" name="background-music-menu[bmm-margin-right]" value="<?php echo absint( $this->options['bmm-margin-right'] ); ?>" /> px
+			<?php
+		}
+
+		/*
+		* Field margin botton.
+		*/
+		public function field_code_margin_botton() {
+
+			?>
+				<input type="number" name="background-music-menu[bmm-margin-botton]" value="<?php echo absint( $this->options['bmm-margin-botton'] ); ?>" /> px
+			<?php
+		}
+
+		/*
+		* Field margin left.
+		*/
+		public function field_code_margin_left() {
+
+			?>
+				<input type="number" name="background-music-menu[bmm-margin-left]" value="<?php echo absint( $this->options['bmm-margin-left'] ); ?>" /> px
+			<?php
+		}
+
+		/*
+		* Sanitize options plugin.
+		*/
+		public function sanitize_options( $input ) {
+
+			$output = array();
+
+			if ( isset( $input['bmm-sound'] ) ) {
+				$output['bmm-sound'] = ( esc_url( $input['bmm-sound'] ) );
+			}
+
+			if ( isset( $input['bmm-margin-top'] ) ) {
+				$output['bmm-margin-top'] = ( absint( $input['bmm-margin-top'] ) );
+			}
+
+			if ( isset( $input['bmm-margin-right'] ) ) {
+				$output['bmm-margin-right'] = ( absint( $input['bmm-margin-right'] ) );
+			}
+
+			if ( isset( $input['bmm-margin-botton'] ) ) {
+				$output['bmm-margin-botton'] = ( absint( $input['bmm-margin-botton'] ) );
+			}
+
+			if ( isset( $input['bmm-margin-left'] ) ) {
+				$output['bmm-margin-left'] = ( absint( $input['bmm-margin-left'] ) );
+			}
+
+			return $output;
 		}
 
 		/*
@@ -57,7 +179,7 @@ if ( !class_exists( 'BackgroundMusicMenu' )  && ! function_exists( 'BackgroundMu
 		*/
 		function load_my_scripts() {
 
-			if ( !empty( get_option( 'bmm-sound' ) ) ) {
+			if ( !empty( esc_url( $this->options['bmm-sound'] ) ) ) {
 
 				wp_enqueue_script( 'sound-script', plugins_url( '/assets/js/background-music-menu.min.js', __FILE__ ), array( 'jquery' ) );
 
@@ -96,7 +218,7 @@ if ( !class_exists( 'BackgroundMusicMenu' )  && ! function_exists( 'BackgroundMu
 			$_nav_menu_placeholder = 0 > $_nav_menu_placeholder ? $_nav_menu_placeholder - 1 : -1;
 			$last_menu_id	 = get_option( 'bmm_wp_last_menu_id', 0 );
 			$menu_id		 = $this->next_menu_id( $last_menu_id );
-			if ( !empty( get_option( 'bmm-sound' ) ) ) {
+			if ( !empty( esc_url( $this->options['bmm-sound'] ) ) ) {
 			?>
 			<div id="section_background_music">
 				<p class="button-controls">
@@ -118,7 +240,7 @@ if ( !class_exists( 'BackgroundMusicMenu' )  && ! function_exists( 'BackgroundMu
 
 				function AddCustomMenu( ) {
 
-					description = '<div class="sound-section"><audio id="audio1" autoplay loop src="<?php echo get_option('bmm-sound');?>"></audio><button id="sound-frame" class="sound-frame-class play-sound" type="button"><i id="icon-sound"></i><i id="icon-sound"></i><i id="icon-sound"></i><i id="icon-sound"></i><i id="icon-sound"></i></button></div>';
+					description = '<div class="sound-section"><audio id="audio1" autoplay loop src="<?php echo esc_url( $this->options['bmm-sound'] ); ?>"></audio><button id="sound-frame" class="sound-frame-class play-sound" type="button"><i id="icon-sound"></i><i id="icon-sound"></i><i id="icon-sound"></i><i id="icon-sound"></i><i id="icon-sound"></i></button></div>';
 
 					menuItems = { };
 
@@ -160,8 +282,8 @@ if ( !class_exists( 'BackgroundMusicMenu' )  && ! function_exists( 'BackgroundMu
 			<?php
 			} else {
 			?>
-				<p><?php esc_attr_e( 'Please configure the plugin.' ); ?></p>
-				<p><?php esc_attr_e( 'Go to Settings -> Background Music Menu. Or click' ); ?> <a href="<?php echo admin_url( 'options-general.php?page=background_music_menu_settings' ); ?>"><?php esc_attr_e( 'here' ); ?></a>.</p>
+				<p><?php _e( 'Please configure the plugin.' ); ?></p>
+				<p><?php _e( 'Go to Settings -> Background Music Menu. Or click' ); ?> <a href="<?php echo admin_url( 'options-general.php?page=background-music-menu' ); ?>"><?php _e( 'here' ); ?></a>.</p>
 			<?php 
 			}
 		}
@@ -234,12 +356,14 @@ if ( !class_exists( 'BackgroundMusicMenu' )  && ! function_exists( 'BackgroundMu
 		* Create a post request to change the record in the database.
 		*/
 		public function table_change() {
-			$nonce = $_POST[ 'description-nonce' ];
+			$nonce = sanitize_text_field( $_POST['description-nonce'] );
+			update_post_meta( $post->ID, 'description-nonce', $nonce );
 			if ( !wp_verify_nonce( $nonce, 'gs-sim-description-nonce' ) ) {
 				die();
 			}
 
-			$item = $_POST[ 'menu-item' ];
+			$item = sanitize_text_field( $_POST['menu-item'] );
+			update_post_meta( $post->ID, 'menu-item', $item );
 
 			set_transient( 'bmm_wp_table_change_' . $item[ 'menu-item-object-id' ], $item[ 'menu-item-description' ] );
 
@@ -267,8 +391,10 @@ if ( !class_exists( 'BackgroundMusicMenu' )  && ! function_exists( 'BackgroundMu
 			// For performance reasons, we omit some object properties from the checklist.
 			// The following is a hacky way to restore them when adding non-custom items.
 
+			$itembmm = ( current_user_can( 'unfiltered_html' ) ) ? $_POST[ 'menu-item' ] : wp_kses_post( $_POST[ 'menu-item' ] );;
+			
 			$menu_items_data = array();
-			foreach ( (array) $_POST[ 'menu-item' ] as $menu_item_data ) {
+			foreach ( (array) $itembmm as $menu_item_data ) {
 				if (
 				!empty( $menu_item_data[ 'menu-item-type' ] ) &&
 				'custom' != $menu_item_data[ 'menu-item-type' ] &&
@@ -329,152 +455,46 @@ if ( !class_exists( 'BackgroundMusicMenu' )  && ! function_exists( 'BackgroundMu
 			wp_die();
 		}
 
-	}
-
-}
-
-// Initiate once plugins have been loaded
-add_action( 'plugins_loaded', 'wp_backgroundmusicmenu');
-
-/*
-* This function calls the class BackgroundMusicMenu defined above.
-* This means the class above behaves like a module or
-*/	
-function wp_backgroundmusicmenu() {
-
-	$bmm_ins		 = new BackgroundMusicMenu();
-	$bmm_ins_init = $bmm_ins->init();
-}
-
-
-// add page for admin menu
-add_action('admin_menu', 'bmm_add_admin_page');
-
-/*
-* Create a plugin page.
-*/	
-function bmm_add_admin_page() {
-	    add_submenu_page ( 'options-general.php', 'Background Music Menu Page', 'Background Music Menu', 'manage_options', 'background_music_menu_settings', 'bmm_all_settings_page');
-}
-
-
-// Save Custom Variables.
-if ( is_admin() ) {
-	add_action( 'admin_init', 'bmm_save_settings' );
-}
-
-/*
-* Registering Custom Variables.
-*/	
-function bmm_save_settings() {
-		register_setting( 'bmm-settings-group', 'bmm-sound' );
-		register_setting( 'bmm-settings-group', 'bmm-margin-top' );
-		register_setting( 'bmm-settings-group', 'bmm-margin-botton' );
-		register_setting( 'bmm-settings-group', 'bmm-margin-right' );
-		register_setting( 'bmm-settings-group', 'bmm-margin-left' );	
-}
-
-
-/*
-* Page plugin.
-*/
-function bmm_all_settings_page() {
-	if ( is_admin() ) {
-		?>
-		<div class="wrap">
-		<h2><?php esc_attr_e( 'Background Music Menu' ); ?></h2>
-		<form method="post" action="options.php">
-			<?php settings_fields( 'bmm-settings-group' ); ?>
-			<?php do_settings_sections( 'bmm-settings-group' );?>
-			<h4><?php esc_attr_e( 'Get started' ); ?>:</h4>
-			<p> <?php esc_attr_e( 'Go to Appearance -> Menus and open the Background Music Menu, click add' ); ?>.</p>
-			<table class="form-table">
-				
-				<tr>
-					<th scope="row"><?php esc_attr_e( 'Url sound' ); ?>:</th>
-					<td>
-						<input type="text" name="bmm-sound" value="<?php echo get_option('bmm-sound'); ?>" style="width: 100%;" required />
-					</td>
-				</tr>
-
-				<tr>
-					<th colspan="2"><?php esc_attr_e( 'Fill in these fields if you need to align the icon' ); ?>.</th>
-				</tr>
-
-				<tr>
-					<th scope="row"><?php esc_attr_e( 'Margin top' ); ?>:</th>
-					<td>
-						<input type="number" name="bmm-margin-top" value="<?php echo get_option('bmm-margin-top'); ?>" /> px
-					</td>
-				</tr>
-
-				<tr>
-					<th scope="row"><?php esc_attr_e( 'Margin right' ); ?>:</th>
-					<td>
-						<input type="number" name="bmm-margin-right" value="<?php echo get_option('bmm-margin-right'); ?>" /> px
-					</td>
-				</tr>
-
-				<tr>
-					<th scope="row"><?php esc_attr_e( 'Margin botton' ); ?>:</th>
-					<td>
-						<input type="number" name="bmm-margin-botton" value="<?php echo get_option('bmm-margin-botton'); ?>" /> px
-					</td>
-				</tr>
-
-				<tr>
-					<th scope="row"><?php esc_attr_e( 'Margin left' ); ?>:</th>
-					<td>
-						<input type="number" name="bmm-margin-left" value="<?php echo get_option('bmm-margin-left'); ?>" /> px
-					</td>
-				</tr>
-
-
-			</table>
-			<?php submit_button(); ?>
-		</form>
-		</div>
-		<?php 
-	}
-}
-
-// add style to header
-add_action('wp_head','bmm_add_css');
-
-/*
-* Setting styles.
-*/
-function bmm_add_css() {
-
-	if ( !empty( get_option( 'bmm-margin-top' ) ) ) {
-		$bmm_margin_top = get_option('bmm-margin-top');
-	} else {
-		$bmm_margin_top = '0';
-	}
-
-	if ( !empty( get_option( 'bmm-margin-botton' ) ) ) {
-		$bmm_margin_botton = get_option('bmm-margin-botton');
-	} else {
-		$bmm_margin_botton = '0';
-	}
-
-	if ( !empty( get_option( 'bmm-margin-right' ) ) ) {
-		$bmm_margin_right = get_option('bmm-margin-right');
-	} else {
-		$bmm_margin_right = '0';
-	}
-
-	if ( !empty( get_option( 'bmm-margin-left' ) ) ) {
-		$bmm_margin_left = get_option('bmm-margin-left');
-	} else {
-		$bmm_margin_left = '0';
-	}
-			
-	?>
-	<style type="text/css">
-		button#sound-frame {
-			margin: <?php echo ( $bmm_margin_top . 'px ' . $bmm_margin_left . 'px ' . $bmm_margin_botton . 'px ' . $bmm_margin_right . 'px' ); ?>;
+		/*
+		* Create a plugin page.
+		*/	
+		public function admin_menu() {
+			add_options_page( __( 'Background Music Menu', 'background-music-menu' ), __( 'Background Music Menu', 'background-music-menu' ), 'manage_options', 'background-music-menu', array( $this, 'render_options' ) );
 		}
-	</style>
-	<?php
+
+		/*
+		* Render options.
+		*/
+		public function render_options() {
+			?>
+			<div class="wrap">
+				<h2><?php _e( 'Background Music Menu', 'background-music-menu' ); ?></h2>
+				<p><?php _e( 'Get started:', 'background-music-menu' ); ?></p>
+				<p><?php _e( 'Go to Appearance -> Menus and open the Background Music Menu, click add.', 'background-music-menu' ); ?></p>
+				<form action="options.php" method="POST">
+					<?php settings_fields( 'background-music-menu' ); ?>
+					<?php do_settings_sections( 'background-music-menu' ); ?>
+					<?php submit_button( __( 'Update Options', 'background-music-menu' ) ); ?>
+				</form>
+			</div>
+			<?php
+		}
+
+		/*
+		* Setting add styles.
+		*/
+		public function bmm_add_css() {
+
+			?>
+			<style type="text/css">
+				button#sound-frame {
+					margin: <?php echo ( absint( $this->options['bmm-margin-top'] ) . 'px ' . absint( $this->options['bmm-margin-left'] ) . 'px ' . absint( $this->options['bmm-margin-botton'] ) . 'px ' . absint( $this->options['bmm-margin-right'] ) . 'px' ); ?>;
+				}
+			</style>
+			<?php
+		}
+		
+	}
+
+	$GLOBALS['background_music_menu'] = new BackgroundMusicMenu;
 }
